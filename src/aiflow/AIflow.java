@@ -29,12 +29,15 @@ public class AIflow {
         //  Ease processing and make arc consistency easier
         //  
         //
-        //
+        // cycle through a frontier with current expanding nodes?
+        // make arc consistent by removing color option for paths not taken
+        // forward check: if no option for color, backtrack one round with restrictions?
+        // If only one valid choice, make the choice
         
         
         //numberedMap is used initially for setting up nodes and drawing
-        int[][] numberedMap=loadMap("14x14maze.txt");
-        
+        int[][] numberedMap=loadMap("5x5maze.txt");
+        Node[] map=linkNodes(numberedMap);
         height=numberedMap.length;
         width=numberedMap[0].length;
        
@@ -123,6 +126,41 @@ public class AIflow {
             }
         }
         return map;
+    }
+    
+    public static Node[] linkNodes(int[][] map){
+        Node[] Maze=new Node[map.length*map[0].length];
+        int nodeNum=0;
+        //may i have some loops brother
+        for(int i=0;i<Maze.length;i++){Maze[i]=new Node(i);}
+        //connect left/right
+        for(int i=0;i<map.length;i++){
+            for(int j=0;j<map[0].length;j++){
+                
+                if(nodeNum+1<Maze.length){ 
+                    Maze[nodeNum].right=Maze[nodeNum+1];
+                    Maze[nodeNum+1].left=Maze[nodeNum];
+                    if(map[i][j]>0){Maze[nodeNum].color=map[i][j];} //setting source colors
+                }
+
+                nodeNum++;
+            }
+        }
+        nodeNum=0;
+        //connect up/down
+        for(int i=0;i<map.length;i++){
+            for(int j=0;j<map[0].length;j++){
+                //both spots aren't walls
+                if(nodeNum+map[0].length<Maze.length){
+                    Maze[nodeNum].down=Maze[nodeNum+map[0].length];
+                    Maze[nodeNum+map[0].length].up=Maze[nodeNum];
+                }
+
+                nodeNum++;
+            }
+        }
+        
+        return Maze;
     }
 
 }
