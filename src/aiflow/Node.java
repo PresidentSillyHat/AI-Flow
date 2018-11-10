@@ -15,6 +15,7 @@ public class Node {
     public Node up;
     public int number; //used for debugging
     public int color=0;
+    public boolean isSource=false;
     public List<Integer> choices=new ArrayList<>(); //options for color
     
     public Node(int num){

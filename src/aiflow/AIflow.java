@@ -16,6 +16,9 @@ public class AIflow {
     public static void main(String[] args) throws Exception {
         
         
+        //Class said to treat smart as boolean SAT problem
+        
+        
         //Notes for implementation:
         //  Nodes will be hindrance here, use 2d array
         //  List of options for each location: more complicated but smarter with forward checking
@@ -34,6 +37,8 @@ public class AIflow {
         // forward check: if no option for color, backtrack one round with restrictions?
         // If only one valid choice, make the choice
         
+        //!!! Corner rule, corners are dependent inside, make color x's, assign 
+        
         
         //numberedMap is used initially for setting up nodes and drawing
         int[][] numberedMap=loadMap("5x5maze.txt");
@@ -43,6 +48,8 @@ public class AIflow {
        
         FlowDrawer.getInstance();
         FlowDrawer.setBoard(numberedMap);
+        System.out.println(map[20].left==null);
+        FlowFinder f=new FlowFinder(numberedMap,map,false);
         
         //FlowFinder dummy=new FlowFinder(numberedMap);
 
@@ -137,12 +144,11 @@ public class AIflow {
         for(int i=0;i<map.length;i++){
             for(int j=0;j<map[0].length;j++){
                 
-                if(nodeNum+1<Maze.length){ 
+                if(nodeNum+1<Maze.length && (nodeNum+1)%(map[0].length)!=0){ 
                     Maze[nodeNum].right=Maze[nodeNum+1];
                     Maze[nodeNum+1].left=Maze[nodeNum];
-                    if(map[i][j]>0){Maze[nodeNum].color=map[i][j];} //setting source colors
                 }
-
+                if(map[i][j]>0){Maze[nodeNum].color=map[i][j];Maze[nodeNum].isSource=true;} //setting source colors
                 nodeNum++;
             }
         }
