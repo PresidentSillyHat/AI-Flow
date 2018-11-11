@@ -36,72 +36,49 @@ public class FlowFinder {
     }
     
     public void smartSolution() throws Exception{
-        // cycle through a frontier with current expanding nodes?
-        // make arc consistent by removing color option for paths not taken
-        // forward check: if no option for color, backtrack one round with restrictions?
-        // If only one valid choice, make the choice
-        
-        //idea 2:
-        // count all open paths on current node
-        // check which open is closer by manhattan distance
-        // connect prev and next
-        // cycle to next frontier node
-        // if no open path, backtrack with some heuristic? Last round?
-        
-        //SAT problem
-        // if not source, has 2 neighbors of same color
-        // Each color must be in a single path
-        //PLACING RULES
-        // Possible if color is connected
-        // Cannot replace colors
-        // Pick the path with smaller manhattan(?)
         
         //Rules:
         // Each square must be connected to two adjacent squares of same color
         // Sources must be connected to one adjacent square
-        while(locked<board.length*board[0].length){
+        int lockedT=0;
+        while(lockedT<board.length*board[0].length){ //come up with better stop condition
+            lockedT=0; //reset count
             for(int i=0;i<map.length;i++){
                 checkOptions(map[i]);
+                if(map[i].color>0)lockedT++;
             }
+            
         }
-        
+        System.out.println("Finished");
     }
     
     //Helpers for source
     public void checkOptions(Node current) throws Exception{
         //if on right side
-        if(current.right==null){
+        if(!exists(current.right)){
             //top right corner
-            if(current.up==null){
+            if(!exists(current.up)){
                 realCorner(current, 1);
             }
             //bottom right corner
-            else if(current.down==null){
+            else if(!exists(current.down)){
                 realCorner(current, 3);
             }
-            else if(current.down.color>0 || current.up.color>0 || current.left.color>0){neighbored(current);}
+            else if(current.color>0)neighbored(current);
         }
         //if on left side
-        else if(current.left==null){
+        else if(!exists(current.left)){
             //top left corner
-            if(current.up==null){
+            if(!exists(current.up)){
                 realCorner(current,0);
             }
             //bottom left corner
-            else if(current.down==null){
+            else if(!exists(current.down)){
                 realCorner(current,2);
             }
-            else if(current.down.color>0 || current.up.color>0 || current.right.color>0){neighbored(current);}
+            else if(current.color>0)neighbored(current);
         }
-        //if on top, corners already checked
-        else if(current.up==null){
-            if(current.down.color>0 || current.right.color>0 || current.left.color>0){neighbored(current);}
-        }
-        //if on bottom
-        else if(current.down==null){
-            if(current.up.color>0 || current.right.color>0 || current.left.color>0){neighbored(current);}
-        }
-        
+        else if(current.color>0)neighbored(current);
         
     }
     
@@ -176,11 +153,12 @@ public class FlowFinder {
      */
     public void neighbored(Node cur) throws Exception{
         int freeMoves=0;
+        //free moves doesnt work for how neighbored tries
         boolean left=false,right=false,up=false,down=false;
-        if(cur.left!=null && cur.left.color==0){freeMoves++;left=true;}
-        if(cur.right!=null && cur.right.color==0){freeMoves++;right=true;}
-        if(cur.up!=null && cur.up.color==0){freeMoves++;up=true;}
-        if(cur.down!=null && cur.down.color==0){freeMoves++;down=true;}
+        if(exists(cur.left) && cur.left.color==0){freeMoves++;left=true;}
+        if(exists(cur.right) && cur.right.color==0){freeMoves++;right=true;}
+        if(exists(cur.up) && cur.up.color==0){freeMoves++;up=true;}
+        if(exists(cur.down) && cur.down.color==0){freeMoves++;down=true;}
         
         if(cur.color==0){return;}//take out later
         
@@ -190,10 +168,13 @@ public class FlowFinder {
                 break;
             case 1:
                 //only one move, check further
-                if(up){cur.up.color=cur.color;colorNode(convertNodeNum(cur.up.number),cur.up.color);}
-                else if(left){cur.left.color=cur.color;colorNode(convertNodeNum(cur.left.number),cur.left.color);}
-                else if(down){cur.down.color=cur.color;colorNode(convertNodeNum(cur.down.number),cur.down.color);}
-                else{cur.right.color=cur.color;colorNode(convertNodeNum(cur.right.number),cur.right.color);}
+                
+                //have to check that placing rules arent violated
+                if(up && validAssignment(cur)){cur.up.color=cur.color;colorNode(convertNodeNum(cur.up.number),cur.up.color);}
+                else if(left && validAssignment(cur)){cur.left.color=cur.color;colorNode(convertNodeNum(cur.left.number),cur.left.color);}
+                else if(down && validAssignment(cur)){cur.down.color=cur.color;colorNode(convertNodeNum(cur.down.number),cur.down.color);}
+                else if(right && validAssignment(cur)){cur.right.color=cur.color;colorNode(convertNodeNum(cur.right.number),cur.right.color);}
+                else{}//Not good
                 //colorNode(convertNodeNum(cur.number),cur.color);
                 break;
             case 2:
@@ -209,6 +190,32 @@ public class FlowFinder {
     }
     public void forwardCheck(){
         
+    }
+    
+    public boolean sameColor(Node cur, Node other){
+        if (exists(other)){
+            if(cur.color==other.color)return true;
+        }
+        return false;
+    }
+    public boolean exists(Node questioned){
+        if(questioned==null)return false;
+        return true;
+    }
+    public boolean validAssignment(Node cur){
+        int connected=0; //keeps track of how many neighbors of same color
+        if(sameColor(cur,cur.left))connected++;
+        if(sameColor(cur,cur.right))connected++;
+        if(sameColor(cur,cur.down))connected++;
+        if(sameColor(cur,cur.up))connected++;
+        if(cur.isSource){
+            //can only have one neighbor of same color if source
+            if (connected>0)return false;
+        }
+        else{
+            if (connected>1)return false;
+        }
+        return true;
     }
     
     public void dummySolution(){

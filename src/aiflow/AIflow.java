@@ -15,40 +15,16 @@ public class AIflow {
     private static int height;
     public static void main(String[] args) throws Exception {
         
-        
-        //Class said to treat smart as boolean SAT problem
-        
-        
-        //Notes for implementation:
-        //  Nodes will be hindrance here, use 2d array
-        //  List of options for each location: more complicated but smarter with forward checking
-        //  Path finding isn't the solution
-        //  Arc consistency, if there is an X that doesn't allow Y somewhere, toss the X
-        //  Forward check: terminate when any remaining variable doesn't have any remaining legal value
-        
-        
-        //Possibilities:
-        //  Only keep list of 4 adjacent assignment possibilities
-        //  Ease processing and make arc consistency easier
-        //  
-        //
-        // cycle through a frontier with current expanding nodes?
-        // make arc consistent by removing color option for paths not taken
-        // forward check: if no option for color, backtrack one round with restrictions?
-        // If only one valid choice, make the choice
-        
-        //!!! Corner rule, corners are dependent inside, make color x's, assign 
-        
-        
+
         //numberedMap is used initially for setting up nodes and drawing
-        int[][] numberedMap=loadMap("5x5maze.txt");
+        int[][] numberedMap=loadMap("7x7maze.txt");
         Node[] map=linkNodes(numberedMap);
         height=numberedMap.length;
         width=numberedMap[0].length;
        
         FlowDrawer.getInstance();
         FlowDrawer.setBoard(numberedMap);
-        System.out.println(map[20].left==null);
+        
         FlowFinder f=new FlowFinder(numberedMap,map,false);
         
         //FlowFinder dummy=new FlowFinder(numberedMap);
@@ -168,5 +144,5 @@ public class AIflow {
         
         return Maze;
     }
-
+    
 }

@@ -89,7 +89,7 @@ public class FlowDrawer extends JFrame{
                         g.setColor(Color.MAGENTA); //magenta
                         break;
                     case 7:
-                        g.setColor(Color.orange); //orange
+                        g.setColor(new Color(255,128,0)); //orange
                         break;
                     case 8:
                         g.setColor(Color.green); //green
@@ -148,7 +148,7 @@ public class FlowDrawer extends JFrame{
                 g.setColor(Color.MAGENTA); //magenta
                 break;
             case 7:
-                g.setColor(Color.orange); //orange
+                g.setColor(new Color(255,128,0)); //orange
                 break;
             case 8:
                 g.setColor(Color.green); //green
