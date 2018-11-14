@@ -15,9 +15,12 @@ public class Node {
     public Node up;
     public int number; //used for debugging
     public int color=0;
-    public boolean isSource=false;
+    public int destination;
+    public  boolean[] expanded = new boolean[15];
     public List<Integer> choices=new ArrayList<>(); //options for color
-    
+    public boolean isSource = false;
+    public boolean isDest = false;
+    int goaldist = 0;
     public Node(int num){
         number=num;
     }
