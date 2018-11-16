@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Stack;
 /**
  *
- * @author Derek Wallace
+ * @author Derek Wallace and Dillon Monday
  */
 public class FlowFinder {
 
@@ -19,11 +19,18 @@ public class FlowFinder {
     public int altColor=-1;
     long starttime = System.currentTimeMillis();
 
+    /**
+     * FlowFinder: finds the solution for the Flow Free based puzzle
+     * @param game 2D version of node[] used by dummy solution
+     * @param game2 node[] used to track with GUI
+     * @param isDummy true if dummy solution being used
+     * @throws Exception
+     */
     public FlowFinder(int[][] game,Node[] game2, boolean isDummy) throws Exception{
         board=game;
         map=game2;
         width=game[0].length;
-
+        
         //get initial frontier
         for(int i=0;i<board.length;i++){
             for(int j=0;j<board[0].length;j++){
@@ -52,25 +59,38 @@ public class FlowFinder {
         if(isDummy){dummySolution();}
         else smartSolution();
     }
-
-  public void smartSolution() throws Exception{
-        
-        int lockedT=0;
-        while(lockedT<board.length*board[0].length){ //come up with better stop condition
+    /* SMART SOLUTION STARTS HERE
+    * Smart solution by Derek
+    */
+    public void smartSolution() throws Exception{
+        starttime=System.currentTimeMillis();
+        int lockedT=0,stalled=0;
+        while(lockedT<board.length*board[0].length){ //stop when all tiles colored
             lockedT=0; //reset count
             for(int i=0;i<map.length;i++){
-                //colorNode(convertNodeNum(map[i].number),3);
                 //Thread.sleep(200);
                 checkOptions(map[i]);
                 if(map[i].color!=0)lockedT++;
-                //colorNode(convertNodeNum(map[i].number),map[i].color);
             }
+           
+            if(lockedT==stalled){
+                //if nothing happens over an iteration, heursitics have failed
+                break;
+            }
+            stalled=lockedT;
             
         }
+        long endtime =  System.currentTimeMillis()-starttime;
+        System.out.println("Runtime: "+endtime);
+        System.out.println("Assignments: "+counter);
         System.out.println("Finished");
     }
     
-    //Helpers for source
+    /**
+     * Check Options: figures out the dependencies of the current node (corner, open, etc)
+     * @param current is node being checked
+     * @throws Exception because of GUI and sleep statements
+     */
     public void checkOptions(Node current) throws Exception{
         //if on right side
         if(!exists(current.right)){
@@ -103,12 +123,12 @@ public class FlowFinder {
         
     }
     
-    
     /**
-    * Corners are dependent so this helps enforce arc consistency
-    * Because there is no zigzagging, both sides of a corner will be the same color
-    * There is a special case for when sources are a corner
-    **/
+     *  Real Corner: enforces dependencies/ arc consistency in physical corners
+     * @param current is the node being checked
+     * @param type is the orientation of the corner
+     * @throws Exception for GUI and sleep
+     */
     public void realCorner(Node current, int type) throws  Exception{
     //type is orientation, 0 topleft, 1 topright, 2 botleft, 3 botright 
         switch(type){
@@ -122,7 +142,7 @@ public class FlowFinder {
                     colorNode(convertNodeNum(current.right.number),current.right.color);
                     colorNode(convertNodeNum(current.down.number),current.down.color);
                 }
-                else{neighbored(current);}
+                else{neighbored(current);} //Source corners are special, treat as a normal colored node
                 break;
             case 1:
                 if(current.isSource==false){
@@ -172,6 +192,7 @@ public class FlowFinder {
      * @throws java.lang.InterruptedException for sleep delay
      */
     public void fakeCorner(Node current) throws IOException, InterruptedException{
+        //if the node is blocked on two adjacent sides and both are done, treat as a corner
         if(satisfiedAssignment(current.left) && satisfiedAssignment(current.up)){
             if(!exists(current.down) && current.down.color!=0 && !exists(current.right) && current.right.color!=0){
                 if(current.down.color==0 && current.right.color==0){current.color=altColor;current.down.color=altColor; current.right.color=altColor;altColor--;}
@@ -209,6 +230,7 @@ public class FlowFinder {
     }
     
     /**
+     * neighbored: check how many options are available for the current node, don't make a decision if more than 1 outcome
      * Checks solutions for nodes near colors but not cornered
      * Will only make a decision if their is only one possible option or enforcing merging of dependencies
      * @param cur is the colored node checking its available moves
@@ -248,6 +270,7 @@ public class FlowFinder {
         
         if(cur.color==0){return;}//take out later
         
+        //outcome depends on number of options, if 0, check for merging dependent lines, if 1 check validity of assignment
         switch(freeMoves){
             //don't merge middles of dependencies
             case 0:
@@ -315,6 +338,7 @@ public class FlowFinder {
                 break;
             case 2:
                 //possible corner
+                //debugging statements to see what it considers open
 //                colorNode(convertNodeNum(cur.number),3);
 //                if(left)colorNode(convertNodeNum(cur.left.number),3);
 //                if(right)colorNode(convertNodeNum(cur.right.number),3);
@@ -335,10 +359,17 @@ public class FlowFinder {
                 break;
         }
     }
+    //Ended up using arc consistency, unused so far
     public void forwardCheck(){
         
     }
     
+    /**
+     * sameColor: 
+     * @param cur is node to be checked
+     * @param other is node being compared with
+     * @return true if nodes are same color
+     */
     public boolean sameColor(Node cur, Node other){
         if (exists(other)){
             if(cur.color==other.color)return true;
@@ -348,6 +379,14 @@ public class FlowFinder {
     
     //follow a path of the merging color and add all those nodes to list
     //change all the listed nodes to new color, then recolor
+
+    /**
+     * mergeDependencies: used when a dependent line finds the color it belongs to
+     * @param altColor the dominant actual color
+     * @param merging the placeholder color for the dependent line
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void mergeDependencies(int altColor,int merging) throws IOException, InterruptedException{
         //List<Node> mergeNodes=new ArrayList<>();
         for(int i=0;i<map.length;i++){
@@ -358,10 +397,21 @@ public class FlowFinder {
         }
     }
     
+    /**
+     * exists: helper method to prevent null pointers
+     * @param questioned the dubious node that might cause exception
+     * @return true if node exists
+     */
     public boolean exists(Node questioned){
         if(questioned==null)return false;
         return true;
     }
+
+    /**
+     * validAssignment: checks if the node can be used
+     * @param cur node checked
+     * @return true if node isn't complete yet
+     */
     public boolean validAssignment(Node cur){
         int connected=0; //keeps track of how many neighbors of same color
         if(sameColor(cur,cur.left))connected++;
@@ -377,6 +427,12 @@ public class FlowFinder {
         }
         return true;
     }
+
+    /**
+     * Alternate version of valid assignment used with fakeCorner
+     * @param cur checked node
+     * @return true if node is complete
+     */
     public boolean satisfiedAssignment(Node cur){
         int connected=0;
         if(!exists(cur) || cur.color==0)return false; //assume dependencies are satisfied for now
@@ -386,6 +442,13 @@ public class FlowFinder {
         if(sameColor(cur,cur.up))connected++;
         return (cur.isSource && connected==1) || (!cur.isSource && connected==2);
     }
+
+    /**
+     *  newValid Assignment: checks for zigzagging when assigning new variable
+     * @param cur current node
+     * @param neo node to be changed
+     * @return true if node doesn't violate constraints
+     */
     public boolean newValidAssignment(Node cur, Node neo){
         //check how many times the color connects to new node, prevents zigzag
         if(neo.color<0){    //check if valid if neo merged dependencies wit cur
@@ -404,6 +467,11 @@ public class FlowFinder {
         return true;
     }
 
+    /**
+     * Dillon's solution for Dummy, TODO: add comments
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void dummySolution() throws IOException, InterruptedException {
 
         for(int x = 0; x<Frontier.size();x++)
@@ -418,23 +486,60 @@ public class FlowFinder {
     }
 
     //for coloring flows
+
+    /**
+     * colorNode: makes it easier to see progress of program
+     * @param coords x and y coordinates for node based off convertNodeNumber and Node.number
+     * @param type is color of node, used with FlowDrawer
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void colorNode(int[] coords,int type) throws IOException, InterruptedException{
         FlowDrawer.updateBoard(coords[0], coords[1], type); //turn color
+        counter++;
         Thread.sleep(25);
     }
 
+    /**
+     * Converts the node number into x y coordinates for 2d array and color node
+     * @param nodeNumber number assigned to node based off initial read in
+     * @return
+     */
     public int[] convertNodeNum(int nodeNumber){
         int[] coords=new int[2];
         coords[0]=nodeNumber%width;
         coords[1]=nodeNumber/width;
         return coords;
     }
+
+    /**
+     * Converts x and y coords of node position into node number
+     * @param y
+     * @param x
+     * @return node number
+     */
     public int convertArrayNum(int y, int x){
         int coords=0;
         coords=y*width +x;
         return coords;
     }
-    //helper function that checks adjacent nodes to see if they are viable options for the current node, and returns the number of viable options
+
+    
+    /**
+     *  END OF SMART SOLUTION
+     * 
+     * 
+     * 
+     *  START OF DUMMY SOLUTION by Dillon
+     * 
+     */
+    
+    /**
+     * helper function that checks adjacent nodes to see if they are viable options for the current node, and returns the number of viable options
+     * @param current
+     * @param x
+     * @return 
+     */
     public int getOptions(Node current, int x)
     {
         int options = 0;
@@ -460,10 +565,12 @@ public class FlowFinder {
     }
 
 
-
-
-
-    //a helper function to see if any of the adjacent nodes are the final goal
+    /**
+     * a helper function to see if any of the adjacent nodes are the final goal
+     * @param source
+     * @param next
+     * @return
+     */
     public boolean goalCheck(Node source, Node next)
     {
         if(source.color == next.color && next.isDest)
@@ -739,5 +846,6 @@ public class FlowFinder {
             return viable;
         }
     }
+
 }
 

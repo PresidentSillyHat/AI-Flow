@@ -3,6 +3,7 @@ package aiflow;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -17,17 +18,59 @@ public class AIflow {
         
 
         //numberedMap is used initially for setting up nodes and drawing
-        int[][] numberedMap=loadMap("9x9maze.txt");
-        Node[] map=linkNodes(numberedMap);
-        height=numberedMap.length;
-        width=numberedMap[0].length;
-       
-        FlowDrawer.getInstance();
-        FlowDrawer.setBoard(numberedMap);
-        
-        try{FlowFinder f=new FlowFinder(numberedMap,map,false);}
-        catch(Exception e){System.out.println(e+" "+e.getStackTrace()[0].getLineNumber());}
-        //FlowFinder dummy=new FlowFinder(numberedMap);
+
+        String[] options=new String[2];
+        options[0]="Smart";
+        options[1]="Dummy";
+        String choice="";
+        String availableChars[] = {"5x5maze.txt","7x7maze.txt","8x8maze.txt","9x9maze.txt","10x10maze.txt","12x12maze.txt"};
+
+        int choiceG = JOptionPane.showOptionDialog(JOptionPane.getRootFrame(),
+                    "Would you like to use the smart or dummy solution?",
+                    "Flow Free solver",0,
+                    JOptionPane.INFORMATION_MESSAGE,null,options,null
+                );
+                if(choiceG==0){
+                    choice = (String) JOptionPane.showInputDialog(JOptionPane.getRootFrame(),
+                    "Which puzzle size would you like to solve?",
+                    "Choose puzzle",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    availableChars,
+                    2);
+                    try{
+                        int[][] numberedMap=loadMap(choice);
+                        Node[] map=linkNodes(numberedMap);
+                        height=numberedMap.length;
+                        width=numberedMap[0].length;
+
+                        FlowDrawer.getInstance();
+                        FlowDrawer.setBoard(numberedMap);
+                        FlowFinder f=new FlowFinder(numberedMap,map,false);
+                    }
+                    catch(Exception e){System.out.println(e+" "+e.getStackTrace()[0].getLineNumber());}
+                }
+                else{
+                    choice = (String) JOptionPane.showInputDialog(JOptionPane.getRootFrame(),
+                    "Which puzzle size would you like to solve?",
+                    "Choose puzzle",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    availableChars,
+                    2);
+                    try{
+                        int[][] numberedMap=loadMap(choice);
+                        Node[] map=linkNodes(numberedMap);
+                        height=numberedMap.length;
+                        width=numberedMap[0].length;
+
+                        FlowDrawer.getInstance();
+                        FlowDrawer.setBoard(numberedMap);
+                        FlowFinder f=new FlowFinder(numberedMap,map,true);
+                    }
+                    catch(Exception e){System.out.println(e+" "+e.getStackTrace()[0].getLineNumber());}
+                }
+
 
 
     }
