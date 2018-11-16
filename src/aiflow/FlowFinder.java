@@ -35,15 +35,15 @@ public class FlowFinder {
                         if(map[nodeNum].color == Frontier.get(x).color) {
                             start = false;
                         }
-                        if (start) {
-                            Frontier.add(map[nodeNum]);
-                            map[nodeNum].isSource = true;
+                    if (start) {
+                        Frontier.add(map[nodeNum]);
+                        map[nodeNum].isSource = true;
 
-                        }
-                        else
-                        {
-                            map[nodeNum].isDest = true;
-                        }
+                    }
+                    else
+                    {
+                        map[nodeNum].isDest = true;
+                    }
 
                 }
             }
@@ -52,8 +52,8 @@ public class FlowFinder {
         else smartSolution();
     }
 
-  public void smartSolution() throws Exception{
-        
+    public void smartSolution() throws Exception{
+
         //Rules:
         // Each square must be connected to two adjacent squares of same color
         // Sources must be connected to one adjacent square
@@ -64,11 +64,11 @@ public class FlowFinder {
                 checkOptions(map[i]);
                 if(map[i].color>0)lockedT++;
             }
-            
+
         }
         System.out.println("Finished");
     }
-    
+
     //Helpers for source
     public void checkOptions(Node current) throws Exception{
         //if on right side
@@ -96,17 +96,17 @@ public class FlowFinder {
             else if(current.color>0)neighbored(current);
         }
         else if(current.color>0)neighbored(current);
-        
+
     }
-    
-    
+
+
     /**
-    * Corners are dependent so this helps enforce arc consistency
-    * Because there is no zigzagging, both sides of a corner will be the same color
-    * There is a special case for when sources are a corner
-    **/
+     * Corners are dependent so this helps enforce arc consistency
+     * Because there is no zigzagging, both sides of a corner will be the same color
+     * There is a special case for when sources are a corner
+     **/
     public void realCorner(Node current, int type) throws IOException, InterruptedException{
-    //type is orientation, 0 topleft, 1 topright, 2 botleft, 3 botright 
+        //type is orientation, 0 topleft, 1 topright, 2 botleft, 3 botright
         switch(type){
             case 0:
                 //if open corner
@@ -152,18 +152,18 @@ public class FlowFinder {
             default:
                 System.out.println("Unreachable");
                 break;
-                
+
         }
     }
-    
+
     /** Detects possible inner corners
      *  A form of consistency
      *  Node current is checked node, type is corner orientation
      */
     public void fakeCorner(Node current, int type){
-        
+
     }
-    
+
     /**
      * Checks solutions for nodes near colors but not cornered
      * Node cur is the node being checked
@@ -176,16 +176,16 @@ public class FlowFinder {
         if(exists(cur.right) && cur.right.color==0){freeMoves++;right=true;}
         if(exists(cur.up) && cur.up.color==0){freeMoves++;up=true;}
         if(exists(cur.down) && cur.down.color==0){freeMoves++;down=true;}
-        
+
         if(cur.color==0){return;}//take out later
-        
+
         switch(freeMoves){
             case 0:
-                //System.out.println("locked in"); 
+                //System.out.println("locked in");
                 break;
             case 1:
                 //only one move, check further
-                
+
                 //have to check that placing rules arent violated
                 if(up && validAssignment(cur)){cur.up.color=cur.color;colorNode(convertNodeNum(cur.up.number),cur.up.color);}
                 else if(left && validAssignment(cur)){cur.left.color=cur.color;colorNode(convertNodeNum(cur.left.number),cur.left.color);}
@@ -206,9 +206,9 @@ public class FlowFinder {
         }
     }
     public void forwardCheck(){
-        
+
     }
-    
+
     public boolean sameColor(Node cur, Node other){
         if (exists(other)){
             if(cur.color==other.color)return true;
@@ -234,14 +234,14 @@ public class FlowFinder {
         }
         return true;
     }
-    
+
     public void dummySolution() throws IOException, InterruptedException {
 
         for(int x = 0; x<Frontier.size();x++)
         {
             System.out.println(Frontier.get(x));
-            }
-     //depthFirstSearch(Frontier.get(0),0);
+        }
+        //depthFirstSearch(Frontier.get(0),0);
         pathCheck(0,true);
         System.out.println(counter);
         long endtime = starttime- System.currentTimeMillis();;
@@ -265,7 +265,7 @@ public class FlowFinder {
         coords=y*width +x;
         return coords;
     }
-	//helper function that checks adjacent nodes to see if they are viable options for the current node, and returns the number of viable options
+    //helper function that checks adjacent nodes to see if they are viable options for the current node, and returns the number of viable options
     public int getOptions(Node current, int x)
     {
         int options = 0;
@@ -290,11 +290,11 @@ public class FlowFinder {
         return options;
     }
 
- 
 
 
 
-        //a helper function to see if any of the adjacent nodes are the final goal
+
+    //a helper function to see if any of the adjacent nodes are the final goal
     public boolean goalCheck(Node source, Node next)
     {
         if(source.color == next.color && next.isDest)
@@ -304,9 +304,9 @@ public class FlowFinder {
         else
             return false;
     }
-		/* 
-		recursive function for searching for the correct path using depth first search.
-		*/
+    /*
+    recursive function for searching for the correct path using depth first search.
+    */
     public boolean pathCheck(int x, boolean viable)throws IOException, InterruptedException {
         {
 
@@ -314,7 +314,7 @@ public class FlowFinder {
             Node curr = Frontier.get(x);
             curr.expanded[x] = true;
             colorNode(convertNodeNum(curr.number), curr.color);
-           // Thread.sleep(500);
+            // Thread.sleep(500);
             boolean flag = false;
             Stack<Node>  finalFrontier = new Stack();
             finalFrontier.push(curr);
@@ -345,7 +345,7 @@ public class FlowFinder {
                                     flag = true;
                                     while (!curr.isSource) {
                                         colorNode(convertNodeNum(curr.number), curr.color);
-                                       // Thread.sleep(500);
+                                        // Thread.sleep(500);
                                         curr = curr.prev;
                                     }
                                     return true;
@@ -354,15 +354,15 @@ public class FlowFinder {
                                 {
                                     while(!finalFrontier.isEmpty())
                                     {
-                                       Node temp = finalFrontier.pop();
-                                       if(!temp.isSource ||!temp.isDest)
-                                       {
-                                           temp.color = 0;
-                                           counter++;
-                                           colorNode(convertNodeNum(temp.number), temp.color);
-                                           //Thread.sleep(500);
-                                           break;
-                                       }
+                                        Node temp = finalFrontier.pop();
+                                        if(!temp.isSource ||!temp.isDest)
+                                        {
+                                            temp.color = 0;
+                                            counter++;
+                                            colorNode(convertNodeNum(temp.number), temp.color);
+                                            //Thread.sleep(500);
+                                            break;
+                                        }
                                     }
                                     finalFrontier.pop();
                                     curr.color = 0;
@@ -409,7 +409,7 @@ public class FlowFinder {
                                     curr.color = 0;
                                     colorNode(convertNodeNum(curr.number), curr.color);
                                     counter++;
-                                   // Thread.sleep(500);
+                                    // Thread.sleep(500);
                                     curr  =curr.prev;
                                     break;
                                 }
@@ -441,7 +441,7 @@ public class FlowFinder {
                                     flag = true;
                                     while (!curr.isSource) {
                                         colorNode(convertNodeNum(curr.number), curr.color);
-                                       // Thread.sleep(500);
+                                        // Thread.sleep(500);
                                         curr = curr.prev;
                                     }
                                     return true;
@@ -507,63 +507,63 @@ public class FlowFinder {
                             counter++;
                             curr = next;
                             colorNode(convertNodeNum(curr.number), curr.color);
-                           // Thread.sleep(500);
+                            // Thread.sleep(500);
                         }
                     }
                     else
                     {
-                       if(finalFrontier.peek().isSource )
-                       {
-                           int size = width*width;
-                           for(int y =0; y<size;y++)
-                           {
-                               if(x==0 && map[y]==curr) {
+                        if(finalFrontier.peek().isSource )
+                        {
+                            int size = width*width;
+                            for(int y =0; y<size;y++)
+                            {
+                                if(x==0 && map[y]==curr) {
 
-                               }
-                               else {
-                                   map[y].expanded[x] = false;
-                               }
-                           }
-                           if(x!=0){return false;}
-                           else
-                           {
-                                   if(curr == curr.prev.left)
-                                   {
-                                       curr.prev.left=null;
-                                   }
-                                   else if(curr == curr.prev.down)
-                                   {
-                                       curr.prev.down=null;
-                                   }else if(curr == curr.prev.right)
-                                   {
-                                       curr.prev.right=null;
-                                   }
-                                   else if(curr == curr.prev.up)
-                                   {
-                                       curr.prev.up=null;
-                                   }
+                                }
+                                else {
+                                    map[y].expanded[x] = false;
+                                }
+                            }
+                            if(x!=0){return false;}
+                            else if(!curr.isSource)
+                            {
+                                if(curr.prev.left!=null && curr == curr.prev.left)
+                                {
+                                    curr.prev.left=null;
+                                }
+                                else if(curr.prev.down!=null &&curr == curr.prev.down)
+                                {
+                                    curr.prev.down=null;
+                                }else if(curr.prev.right!=null &&curr == curr.prev.right)
+                                {
+                                    curr.prev.right=null;
+                                }
+                                else if(curr.prev.up!=null &&curr == curr.prev.up)
+                                {
+                                    curr.prev.up=null;
+                                }
 
-                                    curr.color = 0;
-                                    colorNode(convertNodeNum(curr.number),curr.color);
-                                    curr = curr.prev;
-                               counter++;
-                               System.out.println(counter);
+                                curr.color = 0;
+                                colorNode(convertNodeNum(curr.number),curr.color);
+                                curr = curr.prev;
+                                counter++;
+                                System.out.println(counter);
                                 endtime = starttime- System.currentTimeMillis();
-                               System.out.println(endtime);
-                                    curr.expanded[x] = true;
+                                System.out.println(endtime);
+                                curr.expanded[x] = true;
 
 
 
-                           }
-                       }
-                       else{
-                        finalFrontier.pop();
-                        curr.color = 0;
-                           counter++;
-                           colorNode(convertNodeNum(curr.number), curr.color);
-                           //Thread.sleep(500);
-                        curr = curr.prev;
-                    }
+                            }
+                        }
+                        else{
+                            finalFrontier.pop();
+                            curr.color = 0;
+                            counter++;
+                            colorNode(convertNodeNum(curr.number), curr.color);
+                            //Thread.sleep(500);
+                            curr = curr.prev;
+                        }
                     }
                 }
             }
