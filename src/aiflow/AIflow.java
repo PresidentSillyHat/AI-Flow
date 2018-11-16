@@ -17,7 +17,7 @@ public class AIflow {
         
 
         //numberedMap is used initially for setting up nodes and drawing
-        int[][] numberedMap=loadMap("12x12maze.txt");
+        int[][] numberedMap=loadMap("9x9maze.txt");
         Node[] map=linkNodes(numberedMap);
         height=numberedMap.length;
         width=numberedMap[0].length;
