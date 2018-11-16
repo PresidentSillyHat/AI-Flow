@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Stack;
 /**
  *
- * @author Derek Wallace
+ * @author Derek Wallace and Dillon Monday
  */
 public class FlowFinder {
 
@@ -16,6 +16,7 @@ public class FlowFinder {
     public int width;
     public List<Node> Frontier=new ArrayList<>(); //Frontier
     public int counter=0;
+    public int altColor=-1;
     long starttime = System.currentTimeMillis();
 
     public FlowFinder(int[][] game,Node[] game2, boolean isDummy) throws Exception{
@@ -54,15 +55,15 @@ public class FlowFinder {
 
   public void smartSolution() throws Exception{
         
-        //Rules:
-        // Each square must be connected to two adjacent squares of same color
-        // Sources must be connected to one adjacent square
         int lockedT=0;
         while(lockedT<board.length*board[0].length){ //come up with better stop condition
             lockedT=0; //reset count
             for(int i=0;i<map.length;i++){
+                //colorNode(convertNodeNum(map[i].number),3);
+                //Thread.sleep(200);
                 checkOptions(map[i]);
-                if(map[i].color>0)lockedT++;
+                if(map[i].color!=0)lockedT++;
+                //colorNode(convertNodeNum(map[i].number),map[i].color);
             }
             
         }
@@ -81,7 +82,8 @@ public class FlowFinder {
             else if(!exists(current.down)){
                 realCorner(current, 3);
             }
-            else if(current.color>0)neighbored(current);
+            else if(current.color!=0)neighbored(current);
+            else if(current.color==0)fakeCorner(current);
         }
         //if on left side
         else if(!exists(current.left)){
@@ -93,9 +95,11 @@ public class FlowFinder {
             else if(!exists(current.down)){
                 realCorner(current,2);
             }
-            else if(current.color>0)neighbored(current);
+            else if(current.color!=0)neighbored(current);
+            else if(current.color==0)fakeCorner(current);
         }
-        else if(current.color>0)neighbored(current);
+        else if(current.color!=0)neighbored(current);
+        else if(current.color==0)fakeCorner(current);
         
     }
     
@@ -105,49 +109,53 @@ public class FlowFinder {
     * Because there is no zigzagging, both sides of a corner will be the same color
     * There is a special case for when sources are a corner
     **/
-    public void realCorner(Node current, int type) throws IOException, InterruptedException{
+    public void realCorner(Node current, int type) throws  Exception{
     //type is orientation, 0 topleft, 1 topright, 2 botleft, 3 botright 
         switch(type){
             case 0:
                 //if open corner
                 if(current.isSource==false){
-                    if(current.down.color==0 && current.right.color==0){current.color=15;current.down.color=15; current.right.color=15;}
-                    else if (current.down.color>0){current.color=current.down.color;current.right.color=current.down.color;}
+                    if(current.down.color==0 && current.right.color==0){current.color=altColor;current.down.color=altColor; current.right.color=altColor;altColor--;}
+                    else if (current.down.color!=0){current.color=current.down.color;current.right.color=current.down.color;}
                     else {current.color=current.right.color;current.down.color=current.right.color;}
                     colorNode(convertNodeNum(current.number),current.color);
                     colorNode(convertNodeNum(current.right.number),current.right.color);
                     colorNode(convertNodeNum(current.down.number),current.down.color);
                 }
+                else{neighbored(current);}
                 break;
             case 1:
                 if(current.isSource==false){
-                    if(current.down.color==0 && current.left.color==0){current.color=15;current.down.color=15; current.left.color=15;}
-                    else if (current.down.color>0){current.color=current.down.color;current.left.color=current.down.color;}
+                    if(current.down.color==0 && current.left.color==0){current.color=altColor;current.down.color=altColor; current.left.color=altColor;altColor--;}
+                    else if (current.down.color!=0){current.color=current.down.color;current.left.color=current.down.color;}
                     else {current.color=current.left.color;current.down.color=current.left.color;}
                     colorNode(convertNodeNum(current.number),current.color);
                     colorNode(convertNodeNum(current.left.number),current.left.color);
                     colorNode(convertNodeNum(current.down.number),current.down.color);
                 }
+                else{neighbored(current);}
                 break;
             case 2:
                 if(current.isSource==false){
-                    if(current.up.color==0 && current.right.color==0){current.color=15;current.up.color=15; current.right.color=15;}
-                    else if (current.up.color>0){current.color=current.up.color;current.right.color=current.up.color;}
+                    if(current.up.color==0 && current.right.color==0){current.color=altColor;current.up.color=altColor; current.right.color=altColor;altColor--;}
+                    else if (current.up.color!=0){current.color=current.up.color;current.right.color=current.up.color;}
                     else {current.color=current.right.color;current.up.color=current.right.color;}
                     colorNode(convertNodeNum(current.number),current.color);
                     colorNode(convertNodeNum(current.right.number),current.right.color);
                     colorNode(convertNodeNum(current.up.number),current.up.color);
                 }
+                else{neighbored(current);}
                 break;
             case 3:
                 if(current.isSource==false){
-                    if(current.up.color==0 && current.left.color==0){current.color=15;current.up.color=15; current.left.color=15;}
-                    else if (current.up.color>0){current.color=current.up.color;current.left.color=current.up.color;}
+                    if(current.up.color==0 && current.left.color==0){current.color=altColor;current.up.color=altColor; current.left.color=altColor;altColor--;}
+                    else if (current.up.color!=0){current.color=current.up.color;current.left.color=current.up.color;}
                     else {current.color=current.left.color;current.up.color=current.left.color;}
                     colorNode(convertNodeNum(current.number),current.color);
                     colorNode(convertNodeNum(current.left.number),current.left.color);
                     colorNode(convertNodeNum(current.up.number),current.up.color);
                 }
+                else{neighbored(current);}
                 break;
             default:
                 System.out.println("Unreachable");
@@ -158,44 +166,166 @@ public class FlowFinder {
     
     /** Detects possible inner corners
      *  A form of consistency
-     *  Node current is checked node, type is corner orientation
+     * The inner corners are noticeable by having two adjacent sides be satisfied 
+     * @param current is  possible inner corner
+     * @throws java.io.IOException for drawing call
+     * @throws java.lang.InterruptedException for sleep delay
      */
-    public void fakeCorner(Node current, int type){
-        
+    public void fakeCorner(Node current) throws IOException, InterruptedException{
+        if(satisfiedAssignment(current.left) && satisfiedAssignment(current.up)){
+            if(!exists(current.down) && current.down.color!=0 && !exists(current.right) && current.right.color!=0){
+                if(current.down.color==0 && current.right.color==0){current.color=altColor;current.down.color=altColor; current.right.color=altColor;altColor--;}
+                else if (current.down.color!=0){current.color=current.down.color;current.right.color=current.down.color;}
+                else {current.color=current.right.color;current.down.color=current.right.color;}
+                colorNode(convertNodeNum(current.number),current.color);
+                colorNode(convertNodeNum(current.right.number),current.right.color);
+                colorNode(convertNodeNum(current.down.number),current.down.color);
+            }
+        }
+        else if(satisfiedAssignment(current.left) && satisfiedAssignment(current.down)){
+            if(current.up.color==0 && current.right.color==0){current.color=altColor;current.up.color=altColor; current.right.color=altColor;altColor--;}
+            else if (current.up.color!=0){current.color=current.up.color;current.right.color=current.up.color;}
+            else {current.color=current.right.color;current.up.color=current.right.color;}
+            colorNode(convertNodeNum(current.number),current.color);
+            colorNode(convertNodeNum(current.right.number),current.right.color);
+            colorNode(convertNodeNum(current.up.number),current.up.color);       
+        }
+        else if(satisfiedAssignment(current.right) && satisfiedAssignment(current.up)){ 
+            if(current.down.color==0 && current.left.color==0){current.color=altColor;current.down.color=altColor; current.left.color=altColor;altColor--;}
+            else if (current.down.color!=0){current.color=current.down.color;current.left.color=current.down.color;}
+            else {current.color=current.left.color;current.down.color=current.left.color;}
+            colorNode(convertNodeNum(current.number),current.color);
+            colorNode(convertNodeNum(current.left.number),current.left.color);
+            colorNode(convertNodeNum(current.down.number),current.down.color);   
+        }
+        else if(satisfiedAssignment(current.right) && satisfiedAssignment(current.down)){
+            if(current.up.color==0 && current.left.color==0){current.color=altColor;current.up.color=altColor; current.left.color=altColor;altColor--;}
+            else if (current.up.color!=0){current.color=current.up.color;current.left.color=current.up.color;}
+            else {current.color=current.left.color;current.up.color=current.left.color;}
+            colorNode(convertNodeNum(current.number),current.color);
+            colorNode(convertNodeNum(current.left.number),current.left.color);
+            colorNode(convertNodeNum(current.up.number),current.up.color);
+        }
     }
     
     /**
      * Checks solutions for nodes near colors but not cornered
-     * Node cur is the node being checked
+     * Will only make a decision if their is only one possible option or enforcing merging of dependencies
+     * @param cur is the colored node checking its available moves
      */
     public void neighbored(Node cur) throws Exception{
         int freeMoves=0;
         //free moves doesnt work for how neighbored tries
         boolean left=false,right=false,up=false,down=false;
-        if(exists(cur.left) && cur.left.color==0){freeMoves++;left=true;}
-        if(exists(cur.right) && cur.right.color==0){freeMoves++;right=true;}
-        if(exists(cur.up) && cur.up.color==0){freeMoves++;up=true;}
-        if(exists(cur.down) && cur.down.color==0){freeMoves++;down=true;}
+        boolean leftM=false,rightM=false,upM=false,downM=false;
+        //can't discount grey paths, 
+        if(exists(cur.left) && (cur.left.color<=0 || (cur.color<0 && cur.left.color>0 && !satisfiedAssignment(cur.left)))){
+            //undecided dependencies are <0, this prevents seeing opening at colored dependency
+            if(!sameColor(cur,cur.left)){
+                //if the move is also valid connection wise
+                if(newValidAssignment(cur,cur.left))
+                    freeMoves++;left=true;
+            }
+        }
+        if(exists(cur.right) && (cur.right.color<=0 || (cur.color<0 && cur.right.color>0 && !satisfiedAssignment(cur.right)))){
+            if(!sameColor(cur,cur.right)){
+                if(newValidAssignment(cur,cur.right))
+                    freeMoves++;right=true;
+            }
+        }
+        if(exists(cur.up) && (cur.up.color<=0 || (cur.color<0 && cur.up.color>0 && !satisfiedAssignment(cur.up)))){
+            if(!sameColor(cur,cur.up)){
+                if(newValidAssignment(cur,cur.up))
+                    freeMoves++;up=true;
+            }
+        }
+        if(exists(cur.down) && (cur.down.color<=0 || (cur.color<0 && cur.down.color>0 && !satisfiedAssignment(cur.down)))){
+            if(!sameColor(cur,cur.down)){
+                if(newValidAssignment(cur,cur.down))
+                    freeMoves++;down=true;
+            }
+        }
         
         if(cur.color==0){return;}//take out later
         
         switch(freeMoves){
+            //don't merge middles of dependencies
             case 0:
-                //System.out.println("locked in"); 
+                //if dependency is blocked in, merge
+                int open=0;
+                if(validAssignment(cur)){
+                    if(cur.color<0){
+                        if(exists(cur.left) && cur.left.color!=0){
+                            if(validAssignment(cur.left) && newValidAssignment(cur,cur.left)){
+                                open++; leftM=true;
+                            }
+                        }
+                        if(exists(cur.up) && cur.up.color!=0){
+                            if(validAssignment(cur.up)&& newValidAssignment(cur,cur.up)){
+                                open++; upM=true;
+                            }
+                        }
+                        if(exists(cur.right) && cur.right.color!=0){
+                            if(validAssignment(cur.right)&& newValidAssignment(cur,cur.right)){
+                                open++; rightM=true;
+                            }
+                        }
+
+                        if(exists(cur.down) && cur.down.color!=0){
+                            if(validAssignment(cur.down)&& newValidAssignment(cur,cur.down)){
+                                open++; downM=true;
+                            }
+                        }
+                    }
+                }
+                switch(open){
+                    case 1:
+                        if(leftM)mergeDependencies(Math.max(cur.color,cur.left.color),Math.min(cur.color, cur.left.color));
+                        if(upM)mergeDependencies(Math.max(cur.color,cur.up.color),Math.min(cur.color, cur.up.color));
+                        if(rightM)mergeDependencies(Math.max(cur.color,cur.right.color),Math.min(cur.color, cur.right.color));
+                        if(downM)mergeDependencies(Math.max(cur.color,cur.down.color),Math.min(cur.color, cur.down.color));
+                        break;
+                    default:
+                        //not enough info
+                        break;
+                }
                 break;
             case 1:
                 //only one move, check further
                 
                 //have to check that placing rules arent violated
-                if(up && validAssignment(cur)){cur.up.color=cur.color;colorNode(convertNodeNum(cur.up.number),cur.up.color);}
-                else if(left && validAssignment(cur)){cur.left.color=cur.color;colorNode(convertNodeNum(cur.left.number),cur.left.color);}
-                else if(down && validAssignment(cur)){cur.down.color=cur.color;colorNode(convertNodeNum(cur.down.number),cur.down.color);}
-                else if(right && validAssignment(cur)){cur.right.color=cur.color;colorNode(convertNodeNum(cur.right.number),cur.right.color);}
+                if(up && validAssignment(cur) && newValidAssignment(cur,cur.up)){
+                    if(cur.color<0 && cur.up.color>0)mergeDependencies(Math.max(cur.color,cur.up.color),Math.min(cur.color, cur.up.color));
+                    cur.up.color=cur.color;colorNode(convertNodeNum(cur.up.number),cur.up.color);
+                }
+                else if(left && validAssignment(cur) && newValidAssignment(cur,cur.left)){
+                    if(cur.color<0 && cur.left.color>0)mergeDependencies(Math.max(cur.color,cur.left.color),Math.min(cur.color, cur.left.color));
+                    cur.left.color=cur.color;colorNode(convertNodeNum(cur.left.number),cur.left.color);
+                }
+                else if(down && validAssignment(cur) && newValidAssignment(cur,cur.down)){
+                    if(cur.color<0 && cur.down.color>0)mergeDependencies(Math.max(cur.color,cur.down.color),Math.min(cur.color, cur.down.color));
+                    cur.down.color=cur.color;colorNode(convertNodeNum(cur.down.number),cur.down.color);
+                }
+                else if(right && validAssignment(cur)  && newValidAssignment(cur,cur.right)){
+                    if(cur.color<0 && cur.right.color>0)mergeDependencies(Math.max(cur.color,cur.right.color),Math.min(cur.color, cur.right.color));
+                    cur.right.color=cur.color;colorNode(convertNodeNum(cur.right.number),cur.right.color);
+                }
                 else{}//Not good
-                //colorNode(convertNodeNum(cur.number),cur.color);
+                
                 break;
             case 2:
                 //possible corner
+//                colorNode(convertNodeNum(cur.number),3);
+//                if(left)colorNode(convertNodeNum(cur.left.number),3);
+//                if(right)colorNode(convertNodeNum(cur.right.number),3);
+//                if(down)colorNode(convertNodeNum(cur.down.number),3);
+//                if(up)colorNode(convertNodeNum(cur.up.number),3);
+//                if(left)colorNode(convertNodeNum(cur.left.number),cur.left.color);
+//                if(right)colorNode(convertNodeNum(cur.right.number),cur.right.color);
+//                if(down)colorNode(convertNodeNum(cur.down.number),cur.down.color);
+//                if(up)colorNode(convertNodeNum(cur.up.number),cur.up.color);
+//                colorNode(convertNodeNum(cur.number),cur.color);
+                
                 break;
             case 3:
                 //Not enough info
@@ -215,6 +345,19 @@ public class FlowFinder {
         }
         return false;
     }
+    
+    //follow a path of the merging color and add all those nodes to list
+    //change all the listed nodes to new color, then recolor
+    public void mergeDependencies(int altColor,int merging) throws IOException, InterruptedException{
+        //List<Node> mergeNodes=new ArrayList<>();
+        for(int i=0;i<map.length;i++){
+            if(map[i].color==merging){
+                map[i].color=altColor;
+                colorNode(convertNodeNum(map[i].number),map[i].color);
+            }
+        }
+    }
+    
     public boolean exists(Node questioned){
         if(questioned==null)return false;
         return true;
@@ -232,6 +375,32 @@ public class FlowFinder {
         else{
             if (connected>1)return false;
         }
+        return true;
+    }
+    public boolean satisfiedAssignment(Node cur){
+        int connected=0;
+        if(!exists(cur) || cur.color==0)return false; //assume dependencies are satisfied for now
+        if(sameColor(cur,cur.left))connected++;
+        if(sameColor(cur,cur.right))connected++;
+        if(sameColor(cur,cur.down))connected++;
+        if(sameColor(cur,cur.up))connected++;
+        return (cur.isSource && connected==1) || (!cur.isSource && connected==2);
+    }
+    public boolean newValidAssignment(Node cur, Node neo){
+        //check how many times the color connects to new node, prevents zigzag
+        if(neo.color<0){    //check if valid if neo merged dependencies wit cur
+            if((sameColor(cur,neo.up)||sameColor(neo,neo.up)) && (sameColor(cur,neo.left)||sameColor(neo,neo.left)) && (sameColor(cur,neo.up.left)||sameColor(neo,neo.up.left))){return false;}
+            if((sameColor(cur,neo.up)||sameColor(neo,neo.up)) && (sameColor(cur,neo.right)||sameColor(neo,neo.right)) && (sameColor(cur,neo.up.right)||sameColor(neo,neo.up.right))){return false;}
+            if((sameColor(cur,neo.down)||sameColor(neo,neo.down)) && (sameColor(cur,neo.left)||sameColor(neo,neo.left)) && (sameColor(cur,neo.down.left)||sameColor(neo,neo.down.left))){return false;}
+            if((sameColor(cur,neo.down)||sameColor(neo,neo.down)) && (sameColor(cur,neo.right)||sameColor(neo,neo.right)) && (sameColor(cur,neo.down.right)||sameColor(neo,neo.down.right))){return false;}
+            if(cur.color<0 && neo.color>0)return newValidAssignment(neo,cur);
+        }
+        
+        if(sameColor(cur,neo.up) && sameColor(cur,neo.left) && sameColor(cur,neo.up.left)){return false;}
+        if(sameColor(cur,neo.up) && sameColor(cur,neo.right) && sameColor(cur,neo.up.right)){return false;}
+        if(sameColor(cur,neo.down) && sameColor(cur,neo.left) && sameColor(cur,neo.down.left)){return false;}
+        if(sameColor(cur,neo.down) && sameColor(cur,neo.right) && sameColor(cur,neo.down.right)){return false;}
+
         return true;
     }
     

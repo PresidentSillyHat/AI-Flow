@@ -163,7 +163,7 @@ public class FlowDrawer extends JFrame{
                 g.setColor(new Color(128,0,128)); //purple
                 break;
             default:
-                g.setColor(new Color(128,128,128));   //grey
+                g.setColor(new Color(200+type*20,200+type*20,200+type*20));   //grey
                 break;
         }
 

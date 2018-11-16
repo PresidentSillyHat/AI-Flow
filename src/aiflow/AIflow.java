@@ -17,7 +17,7 @@ public class AIflow {
         
 
         //numberedMap is used initially for setting up nodes and drawing
-        int[][] numberedMap=loadMap("7x7maze.txt");
+        int[][] numberedMap=loadMap("12x12maze.txt");
         Node[] map=linkNodes(numberedMap);
         height=numberedMap.length;
         width=numberedMap[0].length;
@@ -25,8 +25,8 @@ public class AIflow {
         FlowDrawer.getInstance();
         FlowDrawer.setBoard(numberedMap);
         
-        FlowFinder f=new FlowFinder(numberedMap,map,false);
-        
+        try{FlowFinder f=new FlowFinder(numberedMap,map,false);}
+        catch(Exception e){System.out.println(e+" "+e.getStackTrace()[0].getLineNumber());}
         //FlowFinder dummy=new FlowFinder(numberedMap);
 
 
